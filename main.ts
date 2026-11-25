@@ -65,7 +65,13 @@ function deliver(line: string): void {
   if (reread !== line) {
     throw new Error("entry.txt on disk does not match the assembled line");
   }
-  console.log(`wrote ${[...line].length} chars to ${TARGET}`);
+  // Bytes matter as well as characters: the gate counts the file, and a
+  // multi-byte character could push it over even when the count is fine.
+  const bytes = Buffer.byteLength(line, "utf8");
+  if (bytes > GATE.max) {
+    throw new Error(`entry is ${bytes} bytes; the gate allows at most ${GATE.max}`);
+  }
+  console.log(`wrote ${[...line].length} chars (${bytes} bytes) to ${TARGET}`);
   console.log(line);
 }
 
